@@ -59,7 +59,9 @@ read.all <- function() {
 }
 
 
+pushd("../')
 pushd(data.path)
 read.headers()
 read.all()
+popd()
 popd()
