@@ -13,11 +13,7 @@ This repository contains data and statistical analysis on the education levels o
 
 To build the data set, run:
 
-	cd scrape &&  make build
-
-To build the visual elements, run:
-
-	cd visual && make build
+	cd scrape &&  make
 
 #### License
 
