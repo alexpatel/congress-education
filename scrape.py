@@ -9,10 +9,9 @@ from bs4 import BeautifulSoup
 BASE_URL = "http://bioguide.congress.gov/biosearch/biosearch1.asp"
 OUTPUT = lambda x : "bios_{}.csv".format(x)
 HEADER = ['NAME', 'BIO_LINK', 'BIRTH-DEATH', 'POSITION', 'PARTY', 'STATE', 'CONGRESS-NUM', 'MATCH_STRING', 'DEGREE', 'SCHOOL', 'GRAD_YEAR', 'SCHOOL_LOCATION']
-RANGE = xrange(64, 115) # meetings since 1915
+RANGE = xrange(90, 115) # meetings since 1915
 
-edu_pattern = r'; (?P<degree>(?!D\.C\.)([A-Za-z]{1,2}\.)*), (?P<school>[\w+\s*\w+]*),(?P<location>[\w+\s*\w+\.,\s]*), (?P<grad_year>\d{4})'
-edu_regex = re.compile(edu_pattern)
+edu_pattern = r'; (?P<degree>(?!D\.C\.)([A-Za-z]{1,2}\.)*), (?P<school>[\w+\s*\w+]*),((?P<location>[\w+\s*\w+\.,\s]*),)* (?P<grad_year>\d{4}\-\d{4}|\d{4})'
 
 sem = threading.Semaphore(4)
 printlock = threading.Lock()
@@ -27,7 +26,7 @@ def get_edu(bio):
     """ Extract degree data from biography. """
     strip = lambda s : s.replace('\n', '').replace('\r', '')
     bio = strip(bio)
-    matches = edu_regex.finditer(bio)
+    matches = re.finditer(edu_pattern, bio)
     edus = []
     try: 
         while 1:
@@ -82,12 +81,12 @@ def get_people(congress_num):
             link = tds[0].a
             if link:
                 href, name = link.get('href'), link.text
-                printlock.acquire()
-                print "thread {} {}".format(congress_num, name.encode('ascii', 'ignore'))
-                printlock.release()
                 bio = get_bio(href)
                 edu = get_edu(bio)
                 for e in edu:
+                    printlock.acquire()
+                    print "thread", congress_num, "---", name, e["degree"], e["school"], e["grad_year"]
+                    printlock.release()
                     person = [name, \
                             href, \
                             tds[1].text,
