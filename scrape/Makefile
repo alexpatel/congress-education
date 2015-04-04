@@ -1,5 +1,4 @@
 all :
-	source ../venv/bin/activate
 	python2 scrape.py
 	Rscript build.R
 
